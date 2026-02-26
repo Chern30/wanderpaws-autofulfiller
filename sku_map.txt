@@ -1,0 +1,19 @@
+# SKU to display name mapping
+# ─────────────────────────────────────────────────────────────
+# Format:
+#   generic-{sku}    = Display Name
+#   main-{product}   = Display Name
+#   twinned-{sku}    = Display Name:{inherit_count}
+#
+# nonfulfil-* SKUs are skipped automatically — no entry needed.
+# ─────────────────────────────────────────────────────────────
+
+# Generic products (full SKU = key, direct name mapping)
+generic-sipcup=Sip Cup
+
+# Main products (key is main-{product}, variants come from the SKU itself)
+main-harness=Harness
+
+# Twinned products (Name:N where N = how many variants to copy from main)
+# e.g. twinned-leash=Leash:1 copies only the first variant (colour) from main
+twinned-leash=Leash:1

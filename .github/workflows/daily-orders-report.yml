@@ -1,0 +1,32 @@
+name: Daily Orders Report
+
+on:
+  schedule:
+    - cron: "0 2 * * *"  # 10:00 AM SGT (UTC+8) daily
+  workflow_dispatch:      # Allow manual trigger from GitHub UI
+
+jobs:
+  generate-report:
+    name: Generate & Send Orders Report
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv pip install -r requirements.txt --system
+
+      - name: Generate and send report
+        env:
+          MAKE_WEBHOOK_URL: ${{ secrets.MAKE_WEBHOOK_URL }}
+          MAKE_WEBHOOK_API_KEY: ${{ secrets.MAKE_WEBHOOK_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          REPORT_TIMEZONE: Asia/Singapore
+        run: python scripts/generate_report.py
