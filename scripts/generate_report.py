@@ -162,7 +162,7 @@ def fetch_last_order() -> list:
 
 def filter_orders(orders: list, start: datetime, end: datetime) -> list:
     """Client-side filter on created_at in case webhook returns all orders."""
-    print(f"Window : {start.isoformat()} → {end.isoformat()}")
+    print(f"Window : {start.isoformat()} -> {end.isoformat()}")
     filtered = []
     for order in orders:
         if True:
@@ -383,7 +383,7 @@ def main() -> None:
             label = "Last Order"
         else:
             start, end = get_report_window()
-            print(f"Report window: {start.isoformat()} → {end.isoformat()}")
+            print(f"Report window: {start.isoformat()} -> {end.isoformat()}")
             orders = filter_orders(fetch_orders(start, end), start, end)
             label = f"Daily Report — {end.strftime('%d %b %Y')}"
     except Exception as e:
@@ -394,6 +394,9 @@ def main() -> None:
         send_telegram_message(f"*WanderPaws {label}*\nNo orders found.")
         print("No orders — notified via Telegram.")
         return
+
+    # Sort ascending by order number so the sheet reads oldest → newest
+    orders.sort(key=lambda o: int((o.get("name") or "#0").lstrip("#") or 0))
 
     tz = pytz.timezone(TIMEZONE)
     created_at = datetime.now(tz).strftime("%Y-%m-%d")
