@@ -19,6 +19,8 @@
 
 # Generic products (full SKU = key, direct name mapping)
 generic-sipcup=Sip Cup
+generic-tracker-apple=Tracker-Apple
+generic-tracker-android=Tracker-Android
 
 # Main products (key is main-{product}, variants come from the SKU itself)
 # Template: <qty> and <arg1>/<arg2>/... are substituted from the SKU and quantity.
