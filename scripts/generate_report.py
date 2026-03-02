@@ -387,18 +387,25 @@ def main() -> None:
             orders = filter_orders(fetch_orders(start, end), start, end)
             label = f"Daily Report — {end.strftime('%d %b %Y')}"
 
+        tz = pytz.timezone(TIMEZONE)
+        created_at = datetime.now(tz).strftime("%Y-%m-%d")
+
         if not orders:
-            send_telegram_message(f"*WanderPaws {label}*\nNo orders found.")
-            print("No orders — notified via Telegram.")
+            filename = f"Orders {created_at} #No Orders.xlsx"
+            buf = generate_excel([])
+            send_telegram_document(buf, filename, f"*WanderPaws {label}*\nNo orders found.")
+            print("No orders — sent empty Excel via Telegram.")
             return
 
         # Sort ascending by order number so the sheet reads oldest → newest
         orders.sort(key=lambda o: int((o.get("name") or "#0").lstrip("#") or 0))
 
-        tz = pytz.timezone(TIMEZONE)
-        created_at = datetime.now(tz).strftime("%Y-%m-%d")
+        first_order_name = (orders[0].get("name") or "").lstrip("#")
         last_order_name = (orders[-1].get("name") or "").lstrip("#")
-        filename = f"Orders {created_at} #{last_order_name}.xlsx"
+        if len(orders) == 1:
+            filename = f"Orders {created_at} #{first_order_name}.xlsx"
+        else:
+            filename = f"Orders {created_at} #{first_order_name}-#{last_order_name}.xlsx"
 
         rows = build_rows(orders, sku_map)
         buf = generate_excel(rows)
