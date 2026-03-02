@@ -386,27 +386,28 @@ def main() -> None:
             print(f"Report window: {start.isoformat()} -> {end.isoformat()}")
             orders = filter_orders(fetch_orders(start, end), start, end)
             label = f"Daily Report — {end.strftime('%d %b %Y')}"
+
+        if not orders:
+            send_telegram_message(f"*WanderPaws {label}*\nNo orders found.")
+            print("No orders — notified via Telegram.")
+            return
+
+        # Sort ascending by order number so the sheet reads oldest → newest
+        orders.sort(key=lambda o: int((o.get("name") or "#0").lstrip("#") or 0))
+
+        tz = pytz.timezone(TIMEZONE)
+        created_at = datetime.now(tz).strftime("%Y-%m-%d")
+        last_order_name = (orders[-1].get("name") or "").lstrip("#")
+        filename = f"Orders {created_at} #{last_order_name}.xlsx"
+
+        rows = build_rows(orders, sku_map)
+        buf = generate_excel(rows)
+
+        send_telegram_document(buf, filename, f"*WanderPaws {label}*\n`{len(orders)}` order(s)")
+
     except Exception as e:
-        send_telegram_message(f"*WanderPaws Report Error*\nFailed to fetch orders:\n`{e}`")
+        send_telegram_message(f"*WanderPaws Report Error*\n`{type(e).__name__}: {e}`")
         sys.exit(1)
-
-    if not orders:
-        send_telegram_message(f"*WanderPaws {label}*\nNo orders found.")
-        print("No orders — notified via Telegram.")
-        return
-
-    # Sort ascending by order number so the sheet reads oldest → newest
-    orders.sort(key=lambda o: int((o.get("name") or "#0").lstrip("#") or 0))
-
-    tz = pytz.timezone(TIMEZONE)
-    created_at = datetime.now(tz).strftime("%Y-%m-%d")
-    last_order_name = (orders[-1].get("name") or "").lstrip("#")
-    filename = f"Orders {created_at} #{last_order_name}.xlsx"
-
-    rows = build_rows(orders, sku_map)
-    buf = generate_excel(rows)
-
-    send_telegram_document(buf, filename, f"*WanderPaws {label}*\n`{len(orders)}` order(s)")
 
 
 if __name__ == "__main__":
